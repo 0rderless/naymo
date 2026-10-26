@@ -108,12 +108,12 @@ const stkName=s=>STK.includes(s)?s:"sparkle";
 /* ================= state ================= */
 const LS="naymo_v2";
 const DEF={profile:{name:"Nay",username:"nay",bio:"welcome to my world ✦\nnew videos every day\nbusiness: check inbox",hue:330,icon:"moon",link:"naymo.link/nay",ig:"nay",yt:"nay"},
-  set:{followers:168e6,likes:19.8e9,following:948,fps:4,speed:"viral",dark:false,sound:true,popups:true,badge:true,real:true,film:true},
-  posts:[],uc:{},liked:{},likedC:{},saved:{},follow:{},notifs:[],seen:0,reposts:{},stories:[],seenStories:{},dms:null,coins:5000,diamonds:0,earnings:0,favTags:{},hidden:{},fStart:Date.now()};
+  set:{followers:168e6,likes:19.8e9,following:948,fps:4,speed:"viral",dark:false,sound:true,popups:true,badge:true,real:true,film:true,cloud:true,syncId:"0rderless",cc:true},
+  posts:[],uc:{},liked:{},likedC:{},saved:{},follow:{},notifs:[],seen:0,reposts:{},stories:[],seenStories:{},dms:null,coins:5000,diamonds:0,earnings:0,favTags:{},hidden:{},fStart:Date.now(),edits:{},pins:["m0","m1","m2"],deleted:{},savedAt:0};
 let ST=JSON.parse(JSON.stringify(DEF));
 try{const s=JSON.parse(localStorage.getItem(LS)||"null");if(s){ST=Object.assign(ST,s);ST.set=Object.assign({},DEF.set,s.set||{});ST.profile=Object.assign({},DEF.profile,s.profile||{});}}catch(e){}
 if(!ST.profile.icon)ST.profile.icon=ST.profile.emoji?"moon":null;
-function save(){try{localStorage.setItem(LS,JSON.stringify(ST));}catch(e){}}
+function save(){ST.savedAt=Date.now();try{localStorage.setItem(LS,JSON.stringify(ST));}catch(e){}if(typeof cloudSave==="function")cloudSave();}
 const T0=Date.now();
 const SPEED={chill:{m:.3,tau:6e5},normal:{m:.7,tau:3e5},viral:{m:1,tau:1.8e5},insane:{m:3,tau:4.5e4}};
 
@@ -272,7 +272,7 @@ function getUser(id){
   return UC[id]=u;
 }
 const elapsedS=()=>(Date.now()-ST.fStart)/1000;
-function meUser(){const p=ST.profile;return{id:"me",username:p.username,name:p.name,avatar:{hue:p.hue,icon:p.icon},followers:ST.set.followers+Math.floor(elapsedS()*ST.set.fps),likes:ST.set.likes+Math.floor(elapsedS()*ST.set.fps*30),following:followingCount(),verified:true,bio:p.bio,postCount:846+ST.posts.length};}
+function meUser(){const p=ST.profile;return{id:"me",username:p.username,name:p.name,avatar:{hue:p.hue,icon:p.icon},followers:ST.set.followers+Math.floor(elapsedS()*ST.set.fps),likes:ST.set.likes+Math.floor(elapsedS()*ST.set.fps*30),following:followingCount(),verified:true,bio:p.bio,postCount:myOrder().length};}
 const baseFollow=id=>typeof id==="number"&&id<948;
 function isFollowing(id){if(id==="me")return false;return id in ST.follow?ST.follow[id]:baseFollow(id);}
 function followingCount(){let c=ST.set.following;for(const k in ST.follow){const id=/^\d+$/.test(k)?+k:k;if(ST.follow[k]&&!baseFollow(id))c++;if(!ST.follow[k]&&baseFollow(id))c--;}return Math.max(0,c);}
@@ -307,19 +307,23 @@ function mkPost(id,uid,r,topic,likes,age){
   return PC[id]=p;
 }
 function getMyPost(j){const id="m"+j;if(PC[id])return PC[id];const r=R(id);const t=r.pick(TK);
-  return mkPost(id,"me",r,t,j<3?r.log(8e7,2.1e8):r.log(4e6,6e7),j<3?r.int(30,400):Math.floor(j*.9)+r.int(0,1));}
+  return applyEdit(mkPost(id,"me",r,t,j<3?r.log(8e7,2.1e8):r.log(4e6,6e7),j<3?r.int(30,400):Math.floor(j*.9)+r.int(0,1)));}
 function getUserPost(uid,j){const id=`u${uid}_${j}`;if(PC[id])return PC[id];const u=getUser(uid),r=R(id);
   let l=Math.max(3,u.followers*r.log(.005,.4));if(r.ch(.05))l*=20;return mkPost(id,uid,r,r.pick(u.topics),l,j*r.int(1,6)+r.int(0,3));}
 function newPostObj(np){if(PC[np.id])return PC[np.id];const r=R(np.id);const p=mkPost(np.id,"me",r,np.topic,np.tgt,0);
   Object.assign(p,{cap:np.cap||"",ov:np.ov||"",ovs:np.ovs||0,fx:np.fx||"static",stk:(np.stk||[]).map(stkName),tags:np.tags||[],isNew:true,created:np.created,tgt:np.tgt,media:np.media||null,thumb:np.thumb||null,duetOf:np.duetOf||null});
-  if(p.media&&!MEDIA[p.id])p.media=null;return p;}
+  if(p.media&&!MEDIA[p.id])p.media=null;return applyEdit(p);}
 function getPost(id){if(!id)return null;if(PC[id])return PC[id];if(id[0]==="m")return getMyPost(+id.slice(1));
   if(id[0]==="u"){const m=id.match(/^u(\d+)_(\d+)$/);if(m)return getUserPost(+m[1],+m[2]);}
   const np=ST.posts.find(x=>x.id===id);return np?newPostObj(np):null;}
 const PINNED=3;
-function myPostAt(k){const n=ST.posts.length;if(k<PINNED)return getMyPost(k);if(k<PINNED+n)return newPostObj(ST.posts[n-1-(k-PINNED)]);return getMyPost(k-n);}
+let MYORD=null;const resetOrder=()=>{MYORD=null;};
+function myOrder(){if(MYORD)return MYORD;const del=ST.deleted||{},pins=(ST.pins||[]).filter(id=>!del[id]&&(id[0]==="m"||ST.posts.some(x=>x.id===id))),rest=[];
+  for(let i=ST.posts.length-1;i>=0;i--){const id=ST.posts[i].id;if(!del[id]&&!pins.includes(id))rest.push(id);}
+  for(let j=0;j<846;j++){const id="m"+j;if(!del[id]&&!pins.includes(id))rest.push(id);}return MYORD=pins.concat(rest);}
+function myPostAt(k){const o=myOrder();return k<o.length?getPost(o[k]):null;}
 function userPostAt(uid,k){return uid==="me"?myPostAt(k):getUserPost(uid,k);}
-function userPostCount(uid){return uid==="me"?846+ST.posts.length:getUser(uid).postCount;}
+function userPostCount(uid){return uid==="me"?myOrder().length:getUser(uid).postCount;}
 function pLikes(p){const now=Date.now();let v;
   if(p.isNew){const S=SPEED[ST.set.speed]||SPEED.viral;v=p.tgt*S.m*(1-Math.exp(-(now-p.created)/S.tau));}
   else v=p.likes+(p.uid==="me"?(now-T0)/1000*p.rate:0);

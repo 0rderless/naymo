@@ -36,13 +36,13 @@ function renderProfile(sc,uid,layer){
    <div class="pbtns">${me?`<button data-a="edit">Edit profile</button><button data-a="share">Share profile</button><button data-a="create">${ic("plus")}</button>`:u.brand?`<button class="red" data-a="msg">Message</button>`:`<button class="fbtn red ${isFollowing(uid)?"ing":""}" data-fb="${uid}">${isFollowing(uid)?"Following":"Follow"}</button><button data-a="msg">Message</button>`}</div>
    <div class="bio">${esc(u.bio||"No bio yet.")}</div>
    ${me?`<div class="links">${ST.profile.link?`<span>${ic("link")} ${esc(ST.profile.link)}</span>`:""}${ST.profile.ig?`<span>${ic("camera")} Instagram · ${esc(ST.profile.ig)}</span>`:""}${ST.profile.yt?`<span>${ic("playbox")} YouTube · ${esc(ST.profile.yt)}</span>`:""}</div>`:""}
-   ${me?`<div class="plist">${playlists().map((pl,i)=>`<button data-pl="${i}">${pl.name}<small>${pl.ps.length} videos</small></button>`).join("")}</div>`:""}</div>
+   ${me?`<div class="plist"><button data-a="games" class="gchip">${ic("gamepad")} Polygon Dash<small>best ${Math.max(gameBest()[1],gameBest()[2])}%</small></button>${playlists().map((pl,i)=>`<button data-pl="${i}">${pl.name}<small>${pl.ps.length} videos</small></button>`).join("")}</div>`:""}</div>
    <div class="ptabs"><button class="on" data-tab="posts">${ICON.grid}</button><button data-tab="reposts">${ICON.repost}</button><button data-tab="liked">${ICON.heartO}</button>${me?`<button data-tab="saved">${ICON.bmO}</button>`:""}</div><div class="gwrap"></div>`;
   const bk=sc.querySelector(".back");if(bk)bk.onclick=()=>closeLayer(layer);
   sc.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=b.dataset.a;
-    if(a==="edit")openEdit();else if(a==="share"){try{navigator.clipboard&&navigator.clipboard.writeText("https://naymo.app/@"+u.username);}catch(_){}toast("Profile link copied");}
+    if(a==="edit")openEdit();else if(a==="share"){if(me)openShareCard();else{try{navigator.clipboard&&navigator.clipboard.writeText("https://naymo.app/@"+u.username);}catch(_){}toast("Profile link copied");}}
     else if(a==="create")openCreate();else if(a==="msg")openThread(uid);else if(a==="set")openSettings();else if(a==="an")openAnalytics();
-    else if(a==="more")toast("Blocked users: none");
+    else if(a==="more")toast("Blocked users: none");else if(a==="games")openGames();
     else if(a==="av"){if(st)openStories([uid],0);else if(me)openCreate({story:true});}
     else if(a==="following"||a==="followers")openUserList(uid,a);});
   const fb=sc.querySelector("[data-fb]");if(fb)fb.onclick=()=>setFollow(uid,!isFollowing(uid));
@@ -61,7 +61,7 @@ function buildGrid(wrap,gen,scrollEl,opts){
   wrap.innerHTML='<div class="grid"></div><div class="sent" style="height:40px"></div>';const g=wrap.firstChild,sent=wrap.lastChild;let n=0;
   const imgIO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const im=e.target;im.src=thumb(getPost(im.dataset.pid));imgIO.unobserve(im);}}),{root:scrollEl,rootMargin:"300px"});
   function more(){for(let k=0;k<18;k++){const p=gen(n);if(!p){io.disconnect();return;}const idx=n++;const d=document.createElement("div");d.className="gi";
-    d.innerHTML=`<img data-pid="${p.id}" alt="">${opts.pinned&&p.uid==="me"&&idx<PINNED?'<span class="pnd">Pinned</span>':""}${p.isNew?'<span class="nw">NEW</span>':""}<span class="vc">${ICON.play}<span data-live="pv:${p.id}">${fmt(pViews(p))}</span></span>`;
+    d.innerHTML=`<img data-pid="${p.id}" alt="">${opts.pinned&&p.uid==="me"&&(ST.pins||[]).includes(p.id)?'<span class="pnd">Pinned</span>':""}${p.priv?`<span class="nw" style="background:#111;color:#fff">${ic("lock")}</span>`:""}${p.isNew?'<span class="nw">NEW</span>':""}<span class="vc">${ICON.play}<span data-live="pv:${p.id}">${fmt(pViews(p))}</span></span>`;
     d.onclick=()=>openViewer(i=>gen(idx+i));g.appendChild(d);imgIO.observe(d.firstChild);}}
   const io=new IntersectionObserver(es=>{if(es[0].isIntersecting)more();},{root:scrollEl,rootMargin:"400px"});more();io.observe(sent);}
 function openUserList(uid,kind){const u=getUser(uid);const{L,body}=mkLayer("@"+esc(u.username)+" · "+(kind==="following"?fmt(u.following)+" Following":fmt(u.followers)+" Followers"));
@@ -96,6 +96,7 @@ function openSound(p){const u=getUser(p.uid);const{body}=mkLayer("Sound");const 
 /* ================= discover ================= */
 function renderDisc(){if($("#q").value.trim())return doSearch($("#q").value);const d=$("#dres");d.innerHTML="";
   d.appendChild(storyBar());
+  const gc=el(`<div class="gamebanner">${ic("gamepad",{size:30})}<div><b>Polygon Dash</b><small>Play the Naymo game · your best ${Math.max(gameBest()[1],gameBest()[2])}%</small></div>${ic("chevR")}</div>`);gc.onclick=openGames;d.appendChild(gc);
   const lv=liveUsers();d.appendChild(el(`<div class="sec"><span>${ic("live",{color:"#ff3b6b"})} LIVE now</span> <small>${lv.length} creators</small></div>`));
   const lc=el(`<div class="lcards"></div>`);lv.forEach(id=>{const u=getUser(id),p=getUserPost(id,0);const c=el(`<div class="lcard"><img src="${thumb(p)}"><span class="lt">LIVE</span><div class="lb">${esc(u.username)}<small>${ic("eye")} ${fmt(u.followers*.004+R("lvv"+id).int(500,9000))}</small></div></div>`);c.onclick=()=>openLive(id,false);lc.appendChild(c);});d.appendChild(lc);
   const tags=[];TK.forEach(k=>TOP[k].tg.forEach(t=>tags.push(t)));const r=R("trend");

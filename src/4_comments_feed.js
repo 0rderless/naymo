@@ -102,7 +102,7 @@ const feeds=[];
 function makeFeed(elm,gen,opts={}){
   const f={el:elm,gen,items:[],n:0,active:null,opts,swiped:0};
   const io=new IntersectionObserver(es=>{for(const e of es){if(e.isIntersecting&&e.intersectionRatio>=.6){f.active=e.target;sizeCanvas(e.target);if(f.items.indexOf(e.target)>f.items.length-3)more(3);}}},{root:elm,threshold:[.6]});
-  function more(k){for(let j=0;j<k;j++){let p=null,tries=0;while(tries++<8){p=gen(f.n);if(!p)return;f.n++;if(!ST.hidden[p.id])break;p=null;}if(!p)return;const it=buildVid(p,f);elm.appendChild(it);f.items.push(it);io.observe(it);}}
+  function more(k){for(let j=0;j<k;j++){let p=null,tries=0;while(tries++<8){p=gen(f.n);if(!p)return;f.n++;if(!ST.hidden[p.id]&&!(ST.deleted||{})[p.id]&&!(p.priv&&!opts.start))break;p=null;}if(!p)return;const it=buildVid(p,f);elm.appendChild(it);f.items.push(it);io.observe(it);}}
   f.more=more;more(opts.start?2:4);feeds.push(f);
   let sx=0,sy=0,st=0;const down=(x,y)=>{sx=x;sy=y;st=Date.now();},up=(x,y)=>{const dx=x-sx,dy=y-sy;if(dx<-70&&Math.abs(dy)<60&&Date.now()-st<700&&f.active){f.swiped=Date.now();openProfile(f.active._p.uid);}};
   elm.addEventListener("touchstart",e=>down(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
@@ -121,24 +121,37 @@ function buildVid(p,f){
   it.innerHTML=`<canvas></canvas>${med}<div class="tshade"></div><div class="shade"></div>${ovHTML(p)}${stkHTML(p)}<div class="pz">${ICON.bigplay}</div>
   <div class="rail"><div class="ava" data-u="1">${avHTML(u)}${fol?`<div class="fol" data-fol="${p.uid}">+</div>`:""}</div>
   <button class="act lk ${ST.liked[p.id]?"liked":""}">${ICON.heart}<span data-live="pl:${p.id}">${fmt(pLikes(p))}</span></button>
-  <button class="act cmb">${ICON.cmt}<span data-live="pc:${p.id}">${fmt(pComments(p))}</span></button>
+  <button class="act cmb">${ICON.cmt}<span data-live="pc:${p.id}">${p.noCm?"Off":fmt(pComments(p))}</span></button>
   <button class="act sv ${ST.saved[p.id]?"saved":""}">${ICON.save}<span data-live="ps:${p.id}">${fmt(pSaves(p))}</span></button>
   <button class="act sh">${ICON.share}<span data-live="psh:${p.id}">${fmt(pShares(p))}</span></button>
   <div class="disc">${avHTML(u)}</div></div>
   <div class="meta"><div class="un" data-u="1">${esc(u.username)} ${verHTML(u)} <span class="ago">· ${ageStr(p)}</span></div>
   ${ST.reposts[p.id]?'<div class="duet">'+ic("repost")+' You reposted</div>':""}${orig?`<div class="duet">${ic("duet")} Duet with @${esc(getUser(orig.uid).username)}</div>`:""}
   <div class="cap">${capHTML(p)}</div>
-  <div class="snd">${ic("music")} <span>original sound - ${esc(u.username)} &nbsp;&nbsp;&nbsp; original sound - ${esc(u.username)}</span></div></div><div class="prog"><i></i></div>`;
+  <div class="snd">${ic("music")} <span>original sound - ${esc(u.username)} &nbsp;&nbsp;&nbsp; original sound - ${esc(u.username)}</span></div></div><div class="prog"><i></i></div><div class="scrub"></div><div class="x2 hide">2x ${ic("play",{fill:true})}${ic("play",{fill:true})}</div><div class="stime hide"></div>${p.priv?`<div class="privtag">${ic("lock")} Private</div>`:""}`;
   if(murl)it.querySelector("canvas").style.display="none";
-  let lastTap=0,tapT=null;
+  let lastTap=0,tapT=null,holdT=null,held=false;
+  const x2=it.querySelector(".x2");
+  it.addEventListener("pointerdown",e=>{if(e.target.closest(".rail,.meta,.scrub"))return;held=false;holdT=setTimeout(()=>{held=true;it._fast=true;x2.classList.remove("hide");},380);});
+  const endHold=()=>{clearTimeout(holdT);if(it._fast){it._fast=false;x2.classList.add("hide");}};
+  it.addEventListener("pointerup",endHold);it.addEventListener("pointercancel",endHold);it.addEventListener("pointerleave",endHold);
+  const sc=it.querySelector(".scrub"),stime=it.querySelector(".stime");let scr=false;
+  const scrubTo=e=>{const rc=sc.getBoundingClientRect(),fr2=Math.max(0,Math.min(1,(e.clientX-rc.left)/rc.width)),v=it.querySelector("video.media");
+    let dur=p.dur;if(v&&v.duration){dur=v.duration;v.currentTime=fr2*dur;}else it._t=fr2*dur;it.querySelector(".prog i").style.width=fr2*100+"%";
+    const fm=s=>Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0");stime.textContent=fm(fr2*dur)+" / "+fm(dur);};
+  sc.addEventListener("pointerdown",e=>{e.stopPropagation();scr=true;try{sc.setPointerCapture(e.pointerId);}catch(_){}it.classList.add("scrubbing");stime.classList.remove("hide");scrubTo(e);});
+  sc.addEventListener("pointermove",e=>{if(scr)scrubTo(e);});
+  const sEnd=()=>{if(!scr)return;scr=false;it.classList.remove("scrubbing");stime.classList.add("hide");};sc.addEventListener("pointerup",sEnd);sc.addEventListener("pointercancel",sEnd);
+  sc.addEventListener("click",e=>e.stopPropagation());
   it.addEventListener("click",e=>{
+    if(held){held=false;return;}
     if(Date.now()-f.swiped<500)return;
     const tg=e.target;
     if(tg.closest(".fol")){e.stopPropagation();setFollow(p.uid,true);toast("Following @"+u.username);return;}
     if(tg.closest(".disc")||tg.closest(".snd")){openSound(p);return;}
     if(tg.closest("[data-u]")){openProfile(p.uid);return;}
     if(tg.closest(".lk")){toggleLike(p);return;}
-    if(tg.closest(".cmb")){openComments(p);return;}
+    if(tg.closest(".cmb")){if(p.noCm&&p.uid!=="me"){toast("Comments are turned off for this video");return;}openComments(p);return;}
     if(tg.closest(".sv")){toggleSave(p);return;}
     if(tg.closest(".sh")){openShare(p,it);return;}
     if(tg.closest("[data-tag]")){openTag(tg.closest("[data-tag]").dataset.tag);return;}
@@ -172,14 +185,15 @@ function openViewer(gen){const L=el(`<div class="layer dark"><div class="feed"><
   L.querySelector(".back").onclick=()=>closeLayer(L);pushLayer(L);L._feed=makeFeed(L.querySelector(".feed"),gen,{start:1});}
 
 /* ================= share sheet ================= */
-function openShare(p,it){const{bg,body}=mkSheet("Share to","auto");
+function openShare(p,it){const{bg,body}=mkSheet(p.uid==="me"?"Your video":"Share to","auto");
   const contacts=[...Object.keys(ST.dms||{}).slice(0,6).map(k=>/^\d+$/.test(k)?+k:k),...[101,140,233,377,412,598]].slice(0,10);
-  body.innerHTML=`<div class="contacts">${contacts.map(id=>{const u=getUser(id);return `<button data-c="${id}">${avHTML(u)}<span>${esc(u.name)}</span></button>`;}).join("")}</div>
+  body.innerHTML=(p.uid==="me"?manageHTML(p):"")+`<div class="contacts">${contacts.map(id=>{const u=getUser(id);return `<button data-c="${id}">${avHTML(u)}<span>${esc(u.name)}</span></button>`;}).join("")}</div>
   <div class="acts">
    <button data-a="repost" class="${ST.reposts[p.id]?"on":""}"><i>${ic("repost")}</i>${ST.reposts[p.id]?"Reposted":"Repost"}</button>
    <button data-a="duet"><i>${ic("duet")}</i>Duet</button><button data-a="copy"><i>${ic("link")}</i>Copy link</button><button data-a="dl"><i>${ic("download")}</i>Save video</button>
    <button data-a="fav"><i>${ic("star",{fill:!!ST.saved[p.id]})}</i>Favorites</button><button data-a="story"><i>${ic("plus")}</i>Add to story</button>
    <button data-a="ni"><i>${ic("broken")}</i>Not interested</button><button data-a="rep"><i>${ic("flag")}</i>Report</button></div>`;
+  body.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{closeLayer(bg);manageAction(p,b.dataset.m,it);});
   body.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{const id=/^\d+$/.test(b.dataset.c)?+b.dataset.c:b.dataset.c;sendDM(id,{type:"video",pid:p.id});closeLayer(bg);toast("Sent to "+getUser(id).name);});
   body.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=b.dataset.a;closeLayer(bg);
     if(a==="repost"){if(ST.reposts[p.id])delete ST.reposts[p.id];else ST.reposts[p.id]=Date.now();save();updLive();toast(ST.reposts[p.id]?"Reposted — shows on your profile":"Repost removed");}

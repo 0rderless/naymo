@@ -94,7 +94,7 @@ function openLive(host,isMe,opt={}){
     if(side!=="opp")say(uid,`sent ${g.n} x${n}`,"j");}
   const pickG=()=>{const x=r.f();return GIFTS[x<.55?0:x<.75?1:x<.88?2:x<.96?3:x<.99?4:5];};
   // backgrounds: real video when available, otherwise drawn scene
-  const bgv=L.querySelector(".lbgv"),bgv2=L.querySelector(".lbgv2");const realBg=t=>{if(!realOn())return null;const l=libList().filter(x=>x.kind==="video");return l.length?{src:MEDIA[l[hashStr(host+"bg"+t)%l.length].id]}:null;};
+  const bgv=L.querySelector(".lbgv"),bgv2=L.querySelector(".lbgv2");const realBg=t=>{if(!realOn())return null;const l=clipPool(t).filter(x=>x.kind==="video");return l.length?{src:l[hashStr(host+"bg"+t)%l.length].src}:null;};
   function setBg(){const a=realBg(scene);bgv.classList.toggle("hide",!a);bgv.classList.toggle("half",!!S.pk);if(a&&bgv.src!==a.src){bgv.src=a.src;bgv.play().catch(()=>{});}
     const b=S.pk?realBg(S.pk.scene):null;bgv2.classList.toggle("hide",!b);if(b&&bgv2.src!==b.src){bgv2.src=b.src;bgv2.play().catch(()=>{});}}
   setBg();

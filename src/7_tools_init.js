@@ -64,6 +64,10 @@ function openSettings(){const{L,body}=mkLayer("Settings");const s=ST.set;
     <label class="srow">Following<input type="number" id="s_fo" value="${s.following}"></label><label class="srow">Follower gain / sec<input type="number" id="s_fps" value="${s.fps}"></label>
     <div class="srow">New post blow-up<div class="sseg" id="s_sp">${Object.keys(SPEED).map(k=>`<button data-v="${k}" class="${s.speed===k?"on":""}">${k}</button>`).join("")}</div></div>
     <div class="srow"><button class="go" id="s_save">Save numbers</button></div></div>
+   <div class="sgroup"><div class="sgt">Cloud backup</div><div class="srow"><span>${ic("cloud")} Back up to my database</span><button class="sw ${s.cloud?"on":""}" data-k="cloud"></button></div>
+    <label class="srow">Sync ID<input id="s_sid" value="${esc(s.syncId||"")}" placeholder="any name"></label>
+    <div class="srow" style="display:block;font-size:13px;color:var(--mut);line-height:1.5"><span id="s_cst">${esc(cloudStatus)}</span><br>Use the same Sync ID on another phone to load your Naymo there. Uploaded videos stay on the device they came from.</div>
+    <div class="srow" style="gap:8px"><button class="go" id="s_cup">${ic("upload")} Back up now</button><button class="go2" id="s_cdn">${ic("download")} Restore</button></div></div>
    <div class="sgroup"><div class="sgt">Real videos</div><div class="srow"><span>${ic("video")} Use my clips in the feed</span><button class="sw ${s.real!==false?"on":""}" data-k="real"></button></div>
     <div class="srow"><span>${ic("sparkle")} Camera look on drawn videos</span><button class="sw ${s.film!==false?"on":""}" data-k="film"></button></div>
     <div class="srow" style="display:block;font-size:13px;color:var(--mut);line-height:1.5"><span id="s_lc">${libList().length} clips in your library.</span> Add real videos or photos from your phone and they'll play across the whole feed as other people's posts (with all the likes and comments).</div>
@@ -78,6 +82,9 @@ function openSettings(){const{L,body}=mkLayer("Settings");const s=ST.set;
   body.querySelector("#s_save").onclick=()=>{const n=id=>Math.max(0,Math.floor(+body.querySelector(id).value||0));s.followers=n("#s_f");s.likes=n("#s_l");s.following=n("#s_fo");s.fps=n("#s_fps");ST.fStart=Date.now();save();updLive();toast("Numbers updated");};
   body.querySelector("#s_lib").onchange=async e=>{const fs=[...e.target.files];if(!fs.length)return;toast("Adding "+fs.length+" clips…");const n=await addToLibrary(fs);body.querySelector("#s_lc").textContent=libList().length+" clips in your library.";toast(n+" clips added to your feed");refreshFeeds();};
   body.querySelector("#s_libc").onclick=()=>{if(!libList().length)return;if(!confirm("Remove all clips from your library?"))return;clearLibrary();body.querySelector("#s_lc").textContent="0 clips in your library.";refreshFeeds();toast("Library cleared");};
+  body.querySelector("#s_sid").onchange=e=>{s.syncId=e.target.value.trim()||"default";save();};
+  body.querySelector("#s_cup").onclick=()=>{s.syncId=body.querySelector("#s_sid").value.trim()||"default";save();body.querySelector("#s_cst").textContent="Backing up…";cloudSave(true);};
+  body.querySelector("#s_cdn").onclick=async()=>{s.syncId=body.querySelector("#s_sid").value.trim()||"default";const st=body.querySelector("#s_cst");st.textContent="Restoring…";const ok=await cloudLoad(true);st.textContent=cloudStatus;if(ok){toast("Restored — reloading");setTimeout(()=>location.reload(),900);}};
   body.querySelector("#s_coins").onclick=()=>{ST.coins+=10000;save();body.querySelector("#s_c").textContent=fmtX(ST.coins);toast("+10,000 coins");};
   body.querySelectorAll("[data-go]").forEach(r2=>r2.onclick=()=>({an:openAnalytics,live:openGoLive,edit:openEdit,board:()=>openBoard(null,"me",true,"mine")})[r2.dataset.go]());
   body.querySelector("#s_reset").onclick=()=>{if(!confirm("Delete all your Naymo posts, comments, messages and settings?"))return;try{localStorage.removeItem(LS);indexedDB.deleteDatabase("naymo");}catch(e){}location.reload();};}
@@ -141,10 +148,10 @@ let last=performance.now(),lastAct=null,lastVid=null;
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;const f=curFeed(),act=f&&f.active;
   if(act!==lastAct){if(lastVid)lastVid.pause();lastAct=act;lastVid=act?act.querySelector("video.media"):null;}
   if(act){const p=act._p,paused=act.classList.contains("paused");
-    if(!paused){act._t+=dt;if(!act.querySelector(".media")){const cv=act.querySelector("canvas");if(cv.width<2)sizeCanvas(act);drawFull(p,cv.getContext("2d"),cv.width,cv.height,act._t);}
+    if(!paused){act._t+=dt*(act._fast?2:1);if(!act.querySelector(".media")){const cv=act.querySelector("canvas");if(cv.width<2)sizeCanvas(act);drawFull(p,cv.getContext("2d"),cv.width,cv.height,act._t);}
       act.querySelector(".prog i").style.width=((lastVid&&lastVid.duration?lastVid.currentTime/lastVid.duration:(act._t%p.dur)/p.dur)*100)+"%";
       if(p.fx==="pop"){const ws=act.querySelectorAll(".ovt.pop .w"),k=Math.floor(act._t*2.2)%(ws.length+6);ws.forEach((w,i)=>w.classList.toggle("on",i<k));}}
-    if(lastVid){lastVid.muted=!ST.set.sound;if(paused&&!lastVid.paused)lastVid.pause();if(!paused&&lastVid.paused)lastVid.play().catch(()=>{});}}
+    if(lastVid){lastVid.muted=!ST.set.sound;lastVid.playbackRate=act._fast?2:1;if(act.classList.contains("scrubbing"))lastVid.pause();else if(paused&&!lastVid.paused)lastVid.pause();if(!paused&&lastVid.paused)lastVid.play().catch(()=>{});}}
   const top=topCtx();for(const a of ANIMS){if(!a.el.isConnected){ANIMS.delete(a);continue;}if(!top||top===a.el)a.draw(dt);}
   if(AU.ctx&&ST.set.sound){let at=null;if(top&&top._audio)at=top._audio();else if(act&&!act.classList.contains("paused")&&!(act._p.media&&MEDIA[act._p.id]&&act._p.media.kind==="video"))at={key:act._p.scene,seed:act._p.seed};
     if(at)setMusic(at.key,at.seed);else setMusic(null);musicTick();}
@@ -154,13 +161,16 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&&AU.ctx)set
 
 /* ================= init ================= */
 function refreshFeeds(){sessSeed++;for(const id of ["#fyFeed","#flFeed"]){const e=$(id);e.innerHTML="";}feeds.length=0;fyFeed=makeFeed($("#fyFeed"),fyGen);flFeed=null;if(homeTab==="fl")flFeed=makeFeed($("#flFeed"),flGen);for(const k in THC)delete THC[k];}
-(async()=>{applyDark();updSoundBtn();const t0=Date.now();await loadMedia();initDMs();
+function updCC(){$("#ccBtn").innerHTML=`<span class="cc ${ST.set.cc?"":"off"}">CC</span>`;app.classList.toggle("nocc",!ST.set.cc);}
+$("#ccBtn").onclick=()=>{ST.set.cc=!ST.set.cc;save();updCC();toast(ST.set.cc?"Captions on":"Captions off");};
+(async()=>{const t0=Date.now();if(await Promise.race([cloudLoad(false),new Promise(r=>setTimeout(()=>r(false),3500))]))setTimeout(()=>toast("Synced from the cloud"),1300);
+  applyDark();updSoundBtn();updCC();await loadMedia();initDMs();await Promise.race([loadRepoClips(),new Promise(r=>setTimeout(r,2500))]);
 
   lastNotif=ST.notifs.filter(n=>n.at<=Date.now()).length;
   fyFeed=makeFeed($("#fyFeed"),fyGen);requestAnimationFrame(frame);
   setTimeout(()=>{const s=$("#splash");s.style.opacity="0";setTimeout(()=>s.remove(),500);},Math.max(0,1100-(Date.now()-t0)));
-  setTimeout(randomPop,9000);updBadge();})();
-window.__naymo={ST,openBoard,getUser,getPost,openLive,openStories,openThread,openAnalytics,openSettings,openCreate,openShare,openTag,openSound};
+  setTimeout(randomPop,9000);setTimeout(trickle,15000);updBadge();})();
+window.__naymo={get ST(){return ST},openGames,openShareCard,manageAction,openBoard,getUser,getPost,openLive,openStories,openThread,openAnalytics,openSettings,openCreate,openShare,openTag,openSound};
 })();
 </script>
 </body>

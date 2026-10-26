@@ -453,6 +453,19 @@ svg{display:block}
 .lbrow .rk{width:26px;text-align:center;font-weight:900;color:var(--mut)}.lbrow .r1{color:#e0a800}.lbrow .r2{color:#9aa4ae}.lbrow .r3{color:#c97a3a}
 .lbrow .av{width:40px;height:40px;font-size:15px}.lbrow .i{flex:1;min-width:0}.lbrow .i b{display:flex;align-items:center;gap:4px;font-size:14.5px}.lbrow .i div{font-size:12px;color:var(--mut)}.lbrow .val{font-weight:800;font-size:13.5px;white-space:nowrap}
 .lbar .box{min-width:0}.lbar .lb{width:38px;height:38px;flex-shrink:0}
+.nocc .ovt{display:none}
+.cc{display:inline-block;font-size:11px;font-weight:900;border:2px solid #fff;border-radius:5px;padding:1px 4px;color:#fff;line-height:1.1}.cc.off{opacity:.5;text-decoration:line-through}
+.scrub{position:absolute;left:0;right:0;bottom:0;height:22px;z-index:4;touch-action:none}
+.scrubbing .prog{height:6px}.scrubbing .prog i{background:#fff}
+.stime{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);color:#fff;font-weight:800;font-size:22px;text-shadow:0 2px 6px #000;z-index:5;font-variant-numeric:tabular-nums}
+.x2{position:absolute;top:66px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.45);color:#fff;font-weight:800;font-size:14px;padding:4px 12px;border-radius:14px;z-index:5;display:flex;align-items:center;gap:1px}
+.x2 .ic{width:13px;height:13px}
+.privtag{position:absolute;top:62px;left:12px;background:rgba(0,0,0,.5);color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:10px;z-index:3}
+.gamebanner{margin:10px 14px 0;display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:linear-gradient(90deg,#2b1a6b,#a3195b);color:#fff;cursor:pointer}
+.gamebanner div{flex:1}.gamebanner b{display:block;font-size:16px}.gamebanner small{opacity:.85}
+.gchip{background:linear-gradient(90deg,rgba(123,92,255,.18),rgba(255,59,107,.18))!important}
+.gamecard{margin:14px;border-radius:16px;overflow:hidden;background:var(--card);border:1px solid var(--line)}.gcart canvas{width:100%;display:block}
+.gcb{padding:14px;display:flex;flex-direction:column;gap:6px}.gcb b{font-size:18px}.gcb small{color:var(--mut)}
 /* recorder */
 .rec .rv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
 .rtop{position:absolute;top:10px;left:10px;right:10px;display:flex;align-items:center;justify-content:space-between;z-index:3;color:#fff}
@@ -496,7 +509,7 @@ svg{display:block}
     <div class="vtop">
       <button class="livebtn" id="liveBtn"><i></i>LIVE</button>
       <span class="tab" data-t="fl">Following</span><span class="tab on" data-t="fy">For You</span>
-      <div class="rbtns"><button id="sndBtn"></button><button id="hsrch"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button></div>
+      <div class="rbtns"><button id="ccBtn" title="Captions"></button><button id="sndBtn"></button><button id="hsrch"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button></div>
     </div>
   </section>
   <section class="page" id="pg-disc"><div class="scroll" id="discScroll">
@@ -630,12 +643,12 @@ const stkName=s=>STK.includes(s)?s:"sparkle";
 /* ================= state ================= */
 const LS="naymo_v2";
 const DEF={profile:{name:"Nay",username:"nay",bio:"welcome to my world ✦\nnew videos every day\nbusiness: check inbox",hue:330,icon:"moon",link:"naymo.link/nay",ig:"nay",yt:"nay"},
-  set:{followers:168e6,likes:19.8e9,following:948,fps:4,speed:"viral",dark:false,sound:true,popups:true,badge:true,real:true,film:true},
-  posts:[],uc:{},liked:{},likedC:{},saved:{},follow:{},notifs:[],seen:0,reposts:{},stories:[],seenStories:{},dms:null,coins:5000,diamonds:0,earnings:0,favTags:{},hidden:{},fStart:Date.now()};
+  set:{followers:168e6,likes:19.8e9,following:948,fps:4,speed:"viral",dark:false,sound:true,popups:true,badge:true,real:true,film:true,cloud:true,syncId:"0rderless",cc:true},
+  posts:[],uc:{},liked:{},likedC:{},saved:{},follow:{},notifs:[],seen:0,reposts:{},stories:[],seenStories:{},dms:null,coins:5000,diamonds:0,earnings:0,favTags:{},hidden:{},fStart:Date.now(),edits:{},pins:["m0","m1","m2"],deleted:{},savedAt:0};
 let ST=JSON.parse(JSON.stringify(DEF));
 try{const s=JSON.parse(localStorage.getItem(LS)||"null");if(s){ST=Object.assign(ST,s);ST.set=Object.assign({},DEF.set,s.set||{});ST.profile=Object.assign({},DEF.profile,s.profile||{});}}catch(e){}
 if(!ST.profile.icon)ST.profile.icon=ST.profile.emoji?"moon":null;
-function save(){try{localStorage.setItem(LS,JSON.stringify(ST));}catch(e){}}
+function save(){ST.savedAt=Date.now();try{localStorage.setItem(LS,JSON.stringify(ST));}catch(e){}if(typeof cloudSave==="function")cloudSave();}
 const T0=Date.now();
 const SPEED={chill:{m:.3,tau:6e5},normal:{m:.7,tau:3e5},viral:{m:1,tau:1.8e5},insane:{m:3,tau:4.5e4}};
 
@@ -794,7 +807,7 @@ function getUser(id){
   return UC[id]=u;
 }
 const elapsedS=()=>(Date.now()-ST.fStart)/1000;
-function meUser(){const p=ST.profile;return{id:"me",username:p.username,name:p.name,avatar:{hue:p.hue,icon:p.icon},followers:ST.set.followers+Math.floor(elapsedS()*ST.set.fps),likes:ST.set.likes+Math.floor(elapsedS()*ST.set.fps*30),following:followingCount(),verified:true,bio:p.bio,postCount:846+ST.posts.length};}
+function meUser(){const p=ST.profile;return{id:"me",username:p.username,name:p.name,avatar:{hue:p.hue,icon:p.icon},followers:ST.set.followers+Math.floor(elapsedS()*ST.set.fps),likes:ST.set.likes+Math.floor(elapsedS()*ST.set.fps*30),following:followingCount(),verified:true,bio:p.bio,postCount:myOrder().length};}
 const baseFollow=id=>typeof id==="number"&&id<948;
 function isFollowing(id){if(id==="me")return false;return id in ST.follow?ST.follow[id]:baseFollow(id);}
 function followingCount(){let c=ST.set.following;for(const k in ST.follow){const id=/^\d+$/.test(k)?+k:k;if(ST.follow[k]&&!baseFollow(id))c++;if(!ST.follow[k]&&baseFollow(id))c--;}return Math.max(0,c);}
@@ -829,19 +842,23 @@ function mkPost(id,uid,r,topic,likes,age){
   return PC[id]=p;
 }
 function getMyPost(j){const id="m"+j;if(PC[id])return PC[id];const r=R(id);const t=r.pick(TK);
-  return mkPost(id,"me",r,t,j<3?r.log(8e7,2.1e8):r.log(4e6,6e7),j<3?r.int(30,400):Math.floor(j*.9)+r.int(0,1));}
+  return applyEdit(mkPost(id,"me",r,t,j<3?r.log(8e7,2.1e8):r.log(4e6,6e7),j<3?r.int(30,400):Math.floor(j*.9)+r.int(0,1)));}
 function getUserPost(uid,j){const id=`u${uid}_${j}`;if(PC[id])return PC[id];const u=getUser(uid),r=R(id);
   let l=Math.max(3,u.followers*r.log(.005,.4));if(r.ch(.05))l*=20;return mkPost(id,uid,r,r.pick(u.topics),l,j*r.int(1,6)+r.int(0,3));}
 function newPostObj(np){if(PC[np.id])return PC[np.id];const r=R(np.id);const p=mkPost(np.id,"me",r,np.topic,np.tgt,0);
   Object.assign(p,{cap:np.cap||"",ov:np.ov||"",ovs:np.ovs||0,fx:np.fx||"static",stk:(np.stk||[]).map(stkName),tags:np.tags||[],isNew:true,created:np.created,tgt:np.tgt,media:np.media||null,thumb:np.thumb||null,duetOf:np.duetOf||null});
-  if(p.media&&!MEDIA[p.id])p.media=null;return p;}
+  if(p.media&&!MEDIA[p.id])p.media=null;return applyEdit(p);}
 function getPost(id){if(!id)return null;if(PC[id])return PC[id];if(id[0]==="m")return getMyPost(+id.slice(1));
   if(id[0]==="u"){const m=id.match(/^u(\d+)_(\d+)$/);if(m)return getUserPost(+m[1],+m[2]);}
   const np=ST.posts.find(x=>x.id===id);return np?newPostObj(np):null;}
 const PINNED=3;
-function myPostAt(k){const n=ST.posts.length;if(k<PINNED)return getMyPost(k);if(k<PINNED+n)return newPostObj(ST.posts[n-1-(k-PINNED)]);return getMyPost(k-n);}
+let MYORD=null;const resetOrder=()=>{MYORD=null;};
+function myOrder(){if(MYORD)return MYORD;const del=ST.deleted||{},pins=(ST.pins||[]).filter(id=>!del[id]&&(id[0]==="m"||ST.posts.some(x=>x.id===id))),rest=[];
+  for(let i=ST.posts.length-1;i>=0;i--){const id=ST.posts[i].id;if(!del[id]&&!pins.includes(id))rest.push(id);}
+  for(let j=0;j<846;j++){const id="m"+j;if(!del[id]&&!pins.includes(id))rest.push(id);}return MYORD=pins.concat(rest);}
+function myPostAt(k){const o=myOrder();return k<o.length?getPost(o[k]):null;}
 function userPostAt(uid,k){return uid==="me"?myPostAt(k):getUserPost(uid,k);}
-function userPostCount(uid){return uid==="me"?846+ST.posts.length:getUser(uid).postCount;}
+function userPostCount(uid){return uid==="me"?myOrder().length:getUser(uid).postCount;}
 function pLikes(p){const now=Date.now();let v;
   if(p.isNew){const S=SPEED[ST.set.speed]||SPEED.viral;v=p.tgt*S.m*(1-Math.exp(-(now-p.created)/S.tau));}
   else v=p.likes+(p.uid==="me"?(now-T0)/1000*p.rate:0);
@@ -1201,7 +1218,7 @@ const feeds=[];
 function makeFeed(elm,gen,opts={}){
   const f={el:elm,gen,items:[],n:0,active:null,opts,swiped:0};
   const io=new IntersectionObserver(es=>{for(const e of es){if(e.isIntersecting&&e.intersectionRatio>=.6){f.active=e.target;sizeCanvas(e.target);if(f.items.indexOf(e.target)>f.items.length-3)more(3);}}},{root:elm,threshold:[.6]});
-  function more(k){for(let j=0;j<k;j++){let p=null,tries=0;while(tries++<8){p=gen(f.n);if(!p)return;f.n++;if(!ST.hidden[p.id])break;p=null;}if(!p)return;const it=buildVid(p,f);elm.appendChild(it);f.items.push(it);io.observe(it);}}
+  function more(k){for(let j=0;j<k;j++){let p=null,tries=0;while(tries++<8){p=gen(f.n);if(!p)return;f.n++;if(!ST.hidden[p.id]&&!(ST.deleted||{})[p.id]&&!(p.priv&&!opts.start))break;p=null;}if(!p)return;const it=buildVid(p,f);elm.appendChild(it);f.items.push(it);io.observe(it);}}
   f.more=more;more(opts.start?2:4);feeds.push(f);
   let sx=0,sy=0,st=0;const down=(x,y)=>{sx=x;sy=y;st=Date.now();},up=(x,y)=>{const dx=x-sx,dy=y-sy;if(dx<-70&&Math.abs(dy)<60&&Date.now()-st<700&&f.active){f.swiped=Date.now();openProfile(f.active._p.uid);}};
   elm.addEventListener("touchstart",e=>down(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
@@ -1220,24 +1237,37 @@ function buildVid(p,f){
   it.innerHTML=`<canvas></canvas>${med}<div class="tshade"></div><div class="shade"></div>${ovHTML(p)}${stkHTML(p)}<div class="pz">${ICON.bigplay}</div>
   <div class="rail"><div class="ava" data-u="1">${avHTML(u)}${fol?`<div class="fol" data-fol="${p.uid}">+</div>`:""}</div>
   <button class="act lk ${ST.liked[p.id]?"liked":""}">${ICON.heart}<span data-live="pl:${p.id}">${fmt(pLikes(p))}</span></button>
-  <button class="act cmb">${ICON.cmt}<span data-live="pc:${p.id}">${fmt(pComments(p))}</span></button>
+  <button class="act cmb">${ICON.cmt}<span data-live="pc:${p.id}">${p.noCm?"Off":fmt(pComments(p))}</span></button>
   <button class="act sv ${ST.saved[p.id]?"saved":""}">${ICON.save}<span data-live="ps:${p.id}">${fmt(pSaves(p))}</span></button>
   <button class="act sh">${ICON.share}<span data-live="psh:${p.id}">${fmt(pShares(p))}</span></button>
   <div class="disc">${avHTML(u)}</div></div>
   <div class="meta"><div class="un" data-u="1">${esc(u.username)} ${verHTML(u)} <span class="ago">· ${ageStr(p)}</span></div>
   ${ST.reposts[p.id]?'<div class="duet">'+ic("repost")+' You reposted</div>':""}${orig?`<div class="duet">${ic("duet")} Duet with @${esc(getUser(orig.uid).username)}</div>`:""}
   <div class="cap">${capHTML(p)}</div>
-  <div class="snd">${ic("music")} <span>original sound - ${esc(u.username)} &nbsp;&nbsp;&nbsp; original sound - ${esc(u.username)}</span></div></div><div class="prog"><i></i></div>`;
+  <div class="snd">${ic("music")} <span>original sound - ${esc(u.username)} &nbsp;&nbsp;&nbsp; original sound - ${esc(u.username)}</span></div></div><div class="prog"><i></i></div><div class="scrub"></div><div class="x2 hide">2x ${ic("play",{fill:true})}${ic("play",{fill:true})}</div><div class="stime hide"></div>${p.priv?`<div class="privtag">${ic("lock")} Private</div>`:""}`;
   if(murl)it.querySelector("canvas").style.display="none";
-  let lastTap=0,tapT=null;
+  let lastTap=0,tapT=null,holdT=null,held=false;
+  const x2=it.querySelector(".x2");
+  it.addEventListener("pointerdown",e=>{if(e.target.closest(".rail,.meta,.scrub"))return;held=false;holdT=setTimeout(()=>{held=true;it._fast=true;x2.classList.remove("hide");},380);});
+  const endHold=()=>{clearTimeout(holdT);if(it._fast){it._fast=false;x2.classList.add("hide");}};
+  it.addEventListener("pointerup",endHold);it.addEventListener("pointercancel",endHold);it.addEventListener("pointerleave",endHold);
+  const sc=it.querySelector(".scrub"),stime=it.querySelector(".stime");let scr=false;
+  const scrubTo=e=>{const rc=sc.getBoundingClientRect(),fr2=Math.max(0,Math.min(1,(e.clientX-rc.left)/rc.width)),v=it.querySelector("video.media");
+    let dur=p.dur;if(v&&v.duration){dur=v.duration;v.currentTime=fr2*dur;}else it._t=fr2*dur;it.querySelector(".prog i").style.width=fr2*100+"%";
+    const fm=s=>Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0");stime.textContent=fm(fr2*dur)+" / "+fm(dur);};
+  sc.addEventListener("pointerdown",e=>{e.stopPropagation();scr=true;try{sc.setPointerCapture(e.pointerId);}catch(_){}it.classList.add("scrubbing");stime.classList.remove("hide");scrubTo(e);});
+  sc.addEventListener("pointermove",e=>{if(scr)scrubTo(e);});
+  const sEnd=()=>{if(!scr)return;scr=false;it.classList.remove("scrubbing");stime.classList.add("hide");};sc.addEventListener("pointerup",sEnd);sc.addEventListener("pointercancel",sEnd);
+  sc.addEventListener("click",e=>e.stopPropagation());
   it.addEventListener("click",e=>{
+    if(held){held=false;return;}
     if(Date.now()-f.swiped<500)return;
     const tg=e.target;
     if(tg.closest(".fol")){e.stopPropagation();setFollow(p.uid,true);toast("Following @"+u.username);return;}
     if(tg.closest(".disc")||tg.closest(".snd")){openSound(p);return;}
     if(tg.closest("[data-u]")){openProfile(p.uid);return;}
     if(tg.closest(".lk")){toggleLike(p);return;}
-    if(tg.closest(".cmb")){openComments(p);return;}
+    if(tg.closest(".cmb")){if(p.noCm&&p.uid!=="me"){toast("Comments are turned off for this video");return;}openComments(p);return;}
     if(tg.closest(".sv")){toggleSave(p);return;}
     if(tg.closest(".sh")){openShare(p,it);return;}
     if(tg.closest("[data-tag]")){openTag(tg.closest("[data-tag]").dataset.tag);return;}
@@ -1271,14 +1301,15 @@ function openViewer(gen){const L=el(`<div class="layer dark"><div class="feed"><
   L.querySelector(".back").onclick=()=>closeLayer(L);pushLayer(L);L._feed=makeFeed(L.querySelector(".feed"),gen,{start:1});}
 
 /* ================= share sheet ================= */
-function openShare(p,it){const{bg,body}=mkSheet("Share to","auto");
+function openShare(p,it){const{bg,body}=mkSheet(p.uid==="me"?"Your video":"Share to","auto");
   const contacts=[...Object.keys(ST.dms||{}).slice(0,6).map(k=>/^\d+$/.test(k)?+k:k),...[101,140,233,377,412,598]].slice(0,10);
-  body.innerHTML=`<div class="contacts">${contacts.map(id=>{const u=getUser(id);return `<button data-c="${id}">${avHTML(u)}<span>${esc(u.name)}</span></button>`;}).join("")}</div>
+  body.innerHTML=(p.uid==="me"?manageHTML(p):"")+`<div class="contacts">${contacts.map(id=>{const u=getUser(id);return `<button data-c="${id}">${avHTML(u)}<span>${esc(u.name)}</span></button>`;}).join("")}</div>
   <div class="acts">
    <button data-a="repost" class="${ST.reposts[p.id]?"on":""}"><i>${ic("repost")}</i>${ST.reposts[p.id]?"Reposted":"Repost"}</button>
    <button data-a="duet"><i>${ic("duet")}</i>Duet</button><button data-a="copy"><i>${ic("link")}</i>Copy link</button><button data-a="dl"><i>${ic("download")}</i>Save video</button>
    <button data-a="fav"><i>${ic("star",{fill:!!ST.saved[p.id]})}</i>Favorites</button><button data-a="story"><i>${ic("plus")}</i>Add to story</button>
    <button data-a="ni"><i>${ic("broken")}</i>Not interested</button><button data-a="rep"><i>${ic("flag")}</i>Report</button></div>`;
+  body.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{closeLayer(bg);manageAction(p,b.dataset.m,it);});
   body.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{const id=/^\d+$/.test(b.dataset.c)?+b.dataset.c:b.dataset.c;sendDM(id,{type:"video",pid:p.id});closeLayer(bg);toast("Sent to "+getUser(id).name);});
   body.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=b.dataset.a;closeLayer(bg);
     if(a==="repost"){if(ST.reposts[p.id])delete ST.reposts[p.id];else ST.reposts[p.id]=Date.now();save();updLive();toast(ST.reposts[p.id]?"Reposted — shows on your profile":"Repost removed");}
@@ -1384,13 +1415,13 @@ function renderProfile(sc,uid,layer){
    <div class="pbtns">${me?`<button data-a="edit">Edit profile</button><button data-a="share">Share profile</button><button data-a="create">${ic("plus")}</button>`:u.brand?`<button class="red" data-a="msg">Message</button>`:`<button class="fbtn red ${isFollowing(uid)?"ing":""}" data-fb="${uid}">${isFollowing(uid)?"Following":"Follow"}</button><button data-a="msg">Message</button>`}</div>
    <div class="bio">${esc(u.bio||"No bio yet.")}</div>
    ${me?`<div class="links">${ST.profile.link?`<span>${ic("link")} ${esc(ST.profile.link)}</span>`:""}${ST.profile.ig?`<span>${ic("camera")} Instagram · ${esc(ST.profile.ig)}</span>`:""}${ST.profile.yt?`<span>${ic("playbox")} YouTube · ${esc(ST.profile.yt)}</span>`:""}</div>`:""}
-   ${me?`<div class="plist">${playlists().map((pl,i)=>`<button data-pl="${i}">${pl.name}<small>${pl.ps.length} videos</small></button>`).join("")}</div>`:""}</div>
+   ${me?`<div class="plist"><button data-a="games" class="gchip">${ic("gamepad")} Polygon Dash<small>best ${Math.max(gameBest()[1],gameBest()[2])}%</small></button>${playlists().map((pl,i)=>`<button data-pl="${i}">${pl.name}<small>${pl.ps.length} videos</small></button>`).join("")}</div>`:""}</div>
    <div class="ptabs"><button class="on" data-tab="posts">${ICON.grid}</button><button data-tab="reposts">${ICON.repost}</button><button data-tab="liked">${ICON.heartO}</button>${me?`<button data-tab="saved">${ICON.bmO}</button>`:""}</div><div class="gwrap"></div>`;
   const bk=sc.querySelector(".back");if(bk)bk.onclick=()=>closeLayer(layer);
   sc.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=b.dataset.a;
-    if(a==="edit")openEdit();else if(a==="share"){try{navigator.clipboard&&navigator.clipboard.writeText("https://naymo.app/@"+u.username);}catch(_){}toast("Profile link copied");}
+    if(a==="edit")openEdit();else if(a==="share"){if(me)openShareCard();else{try{navigator.clipboard&&navigator.clipboard.writeText("https://naymo.app/@"+u.username);}catch(_){}toast("Profile link copied");}}
     else if(a==="create")openCreate();else if(a==="msg")openThread(uid);else if(a==="set")openSettings();else if(a==="an")openAnalytics();
-    else if(a==="more")toast("Blocked users: none");
+    else if(a==="more")toast("Blocked users: none");else if(a==="games")openGames();
     else if(a==="av"){if(st)openStories([uid],0);else if(me)openCreate({story:true});}
     else if(a==="following"||a==="followers")openUserList(uid,a);});
   const fb=sc.querySelector("[data-fb]");if(fb)fb.onclick=()=>setFollow(uid,!isFollowing(uid));
@@ -1409,7 +1440,7 @@ function buildGrid(wrap,gen,scrollEl,opts){
   wrap.innerHTML='<div class="grid"></div><div class="sent" style="height:40px"></div>';const g=wrap.firstChild,sent=wrap.lastChild;let n=0;
   const imgIO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const im=e.target;im.src=thumb(getPost(im.dataset.pid));imgIO.unobserve(im);}}),{root:scrollEl,rootMargin:"300px"});
   function more(){for(let k=0;k<18;k++){const p=gen(n);if(!p){io.disconnect();return;}const idx=n++;const d=document.createElement("div");d.className="gi";
-    d.innerHTML=`<img data-pid="${p.id}" alt="">${opts.pinned&&p.uid==="me"&&idx<PINNED?'<span class="pnd">Pinned</span>':""}${p.isNew?'<span class="nw">NEW</span>':""}<span class="vc">${ICON.play}<span data-live="pv:${p.id}">${fmt(pViews(p))}</span></span>`;
+    d.innerHTML=`<img data-pid="${p.id}" alt="">${opts.pinned&&p.uid==="me"&&(ST.pins||[]).includes(p.id)?'<span class="pnd">Pinned</span>':""}${p.priv?`<span class="nw" style="background:#111;color:#fff">${ic("lock")}</span>`:""}${p.isNew?'<span class="nw">NEW</span>':""}<span class="vc">${ICON.play}<span data-live="pv:${p.id}">${fmt(pViews(p))}</span></span>`;
     d.onclick=()=>openViewer(i=>gen(idx+i));g.appendChild(d);imgIO.observe(d.firstChild);}}
   const io=new IntersectionObserver(es=>{if(es[0].isIntersecting)more();},{root:scrollEl,rootMargin:"400px"});more();io.observe(sent);}
 function openUserList(uid,kind){const u=getUser(uid);const{L,body}=mkLayer("@"+esc(u.username)+" · "+(kind==="following"?fmt(u.following)+" Following":fmt(u.followers)+" Followers"));
@@ -1444,6 +1475,7 @@ function openSound(p){const u=getUser(p.uid);const{body}=mkLayer("Sound");const 
 /* ================= discover ================= */
 function renderDisc(){if($("#q").value.trim())return doSearch($("#q").value);const d=$("#dres");d.innerHTML="";
   d.appendChild(storyBar());
+  const gc=el(`<div class="gamebanner">${ic("gamepad",{size:30})}<div><b>Polygon Dash</b><small>Play the Naymo game · your best ${Math.max(gameBest()[1],gameBest()[2])}%</small></div>${ic("chevR")}</div>`);gc.onclick=openGames;d.appendChild(gc);
   const lv=liveUsers();d.appendChild(el(`<div class="sec"><span>${ic("live",{color:"#ff3b6b"})} LIVE now</span> <small>${lv.length} creators</small></div>`));
   const lc=el(`<div class="lcards"></div>`);lv.forEach(id=>{const u=getUser(id),p=getUserPost(id,0);const c=el(`<div class="lcard"><img src="${thumb(p)}"><span class="lt">LIVE</span><div class="lb">${esc(u.username)}<small>${ic("eye")} ${fmt(u.followers*.004+R("lvv"+id).int(500,9000))}</small></div></div>`);c.onclick=()=>openLive(id,false);lc.appendChild(c);});d.appendChild(lc);
   const tags=[];TK.forEach(k=>TOP[k].tg.forEach(t=>tags.push(t)));const r=R("trend");
@@ -1694,7 +1726,7 @@ function openLive(host,isMe,opt={}){
     if(side!=="opp")say(uid,`sent ${g.n} x${n}`,"j");}
   const pickG=()=>{const x=r.f();return GIFTS[x<.55?0:x<.75?1:x<.88?2:x<.96?3:x<.99?4:5];};
   // backgrounds: real video when available, otherwise drawn scene
-  const bgv=L.querySelector(".lbgv"),bgv2=L.querySelector(".lbgv2");const realBg=t=>{if(!realOn())return null;const l=libList().filter(x=>x.kind==="video");return l.length?{src:MEDIA[l[hashStr(host+"bg"+t)%l.length].id]}:null;};
+  const bgv=L.querySelector(".lbgv"),bgv2=L.querySelector(".lbgv2");const realBg=t=>{if(!realOn())return null;const l=clipPool(t).filter(x=>x.kind==="video");return l.length?{src:l[hashStr(host+"bg"+t)%l.length].src}:null;};
   function setBg(){const a=realBg(scene);bgv.classList.toggle("hide",!a);bgv.classList.toggle("half",!!S.pk);if(a&&bgv.src!==a.src){bgv.src=a.src;bgv.play().catch(()=>{});}
     const b=S.pk?realBg(S.pk.scene):null;bgv2.classList.toggle("hide",!b);if(b&&bgv2.src!==b.src){bgv2.src=b.src;bgv2.play().catch(()=>{});}}
   setBg();
@@ -1797,8 +1829,8 @@ function genUnique(kind,p,used,x){for(let i=0;i<20;i++){const s=gen(kind,p,x);if
 
 /* ================= real clip library (your own clips used across the feed) ================= */
 function libList(){return (ST.lib||[]).filter(x=>MEDIA[x.id]);}
-const realOn=()=>ST.set.real!==false&&libList().length>0;
-function realOf(p){if(!realOn()||p.media||p.duetOf||p.isNew)return null;const l=libList();const x=l[hashStr(p.id)%l.length];return {src:MEDIA[x.id],poster:x.thumb,kind:x.kind};}
+const realOn=()=>ST.set.real!==false&&(libList().length>0||(typeof REPOCLIPS!=="undefined"&&REPOCLIPS.length>0));
+function realOf(p){if(ST.set.real===false||p.media||p.duetOf||p.isNew)return null;const pool=clipPool(p.topic);if(!pool.length)return null;const x=pool[hashStr(p.id)%pool.length];return {src:x.src,poster:x.poster,kind:x.kind};}
 const vidSrc=p=>(p.media&&MEDIA[p.id])?{src:MEDIA[p.id],kind:p.media.kind,own:true}:(r=>r?{src:r.src,kind:r.kind,poster:r.poster,own:false}:null)(realOf(p));
 async function addToLibrary(files){ST.lib=ST.lib||[];let n=0;for(const f of files){const kind=f.type.startsWith("video")?"video":f.type.startsWith("image")?"image":null;if(!kind)continue;
   const id="L"+Date.now().toString(36)+Math.floor(Math.random()*1e4),url=URL.createObjectURL(f);MEDIA[id]=url;await IDB.put(id,f);ST.lib.push({id,kind,thumb:await makeThumb(url,kind)});n++;}save();return n;}
@@ -1854,6 +1886,128 @@ function openRecorder(onDone){
     const tick=()=>{if(!rec)return;const s=(Date.now()-t0)/1000;pr.style.strokeDashoffset=289*(1-Math.min(1,s/maxLen));tm.textContent=Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0");if(s>=maxLen)rec.stop();else setTimeout(tick,100);};tick();}
   btn.onclick=()=>{if(rec){rec.stop();return;}if(timer){const cd=L.querySelector(".rcd");let n=timer;cd.textContent=n;cd.classList.remove("hide");const iv=setInterval(()=>{n--;if(n<=0){clearInterval(iv);cd.classList.add("hide");begin();}else cd.textContent=n;},1000);}else begin();};
   L._onClose=()=>{try{if(rec&&rec.state!=="inactive")rec.stop();}catch(e){}cancelAnimationFrame(raf);if(stream)stream.getTracks().forEach(t=>t.stop());};}
+
+/* ================= cloud sync (Firebase Realtime Database over REST) ================= */
+const FB={url:"https://mingchat-e8a29-default-rtdb.firebaseio.com",key:"AIzaSyCf1_uelYRFLSW8e652hHBppFUwmegkJE0"};
+let cloudT=null,cloudStatus="Not synced yet",fbToken=null;
+const syncKey=()=>String(ST.set.syncId||"default").trim().replace(/[.#$\[\]\/\s]/g,"_")||"default";
+async function fbAuth(){try{const c=JSON.parse(sessionStorage.getItem("naymo_fbt")||"null");if(c&&c.exp>Date.now())return c.t;}catch(e){}
+  const r=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key="+FB.key,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({returnSecureToken:true})});
+  if(!r.ok)return null;const j=await r.json();try{sessionStorage.setItem("naymo_fbt",JSON.stringify({t:j.idToken,exp:Date.now()+50*60e3}));}catch(e){}return j.idToken;}
+async function fbFetch(method,body){const u=`${FB.url}/naymo/${encodeURIComponent(syncKey())}.json`;
+  let r=await fetch(u+(fbToken?"?auth="+fbToken:""),{method,body});
+  if((r.status===401||r.status===403)&&!fbToken){fbToken=await fbAuth();if(fbToken)r=await fetch(u+"?auth="+fbToken,{method,body});}
+  return r;}
+function cloudSave(now){if(!ST.set.cloud)return;clearTimeout(cloudT);cloudT=setTimeout(async()=>{
+  try{const r=await fbFetch("PUT",JSON.stringify({savedAt:ST.savedAt||Date.now(),state:JSON.stringify(ST)}));
+    cloudStatus=r.ok?"Backed up "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}):r.status===401||r.status===403?"Database refused access (check its rules)":"Cloud error "+r.status;}
+  catch(e){cloudStatus="Offline — will back up when you're online";}
+  const s=document.getElementById("s_cst");if(s)s.textContent=cloudStatus;},now?10:4000);}
+async function cloudLoad(force){if(!ST.set.cloud&&!force)return false;
+  try{const r=await fbFetch("GET");if(!r.ok){cloudStatus=r.status===401||r.status===403?"Database refused access (check its rules)":"Cloud error "+r.status;return false;}
+    const j=await r.json();if(!j||!j.state){cloudStatus="Nothing in the cloud yet";return false;}
+    if(!force&&(j.savedAt||0)<=(ST.savedAt||0)){cloudStatus="Up to date";return false;}
+    const s=JSON.parse(j.state);ST=Object.assign(JSON.parse(JSON.stringify(DEF)),s);ST.set=Object.assign({},DEF.set,s.set||{});ST.profile=Object.assign({},DEF.profile,s.profile||{});
+    try{localStorage.setItem(LS,JSON.stringify(ST));}catch(e){}cloudStatus="Restored from cloud";return true;}
+  catch(e){cloudStatus="Couldn't reach the cloud";return false;}}
+
+/* ================= clips folder in the GitHub repo (no API key) ================= */
+const REPO={owner:"0rderless",name:"naymo"};let REPOCLIPS=[];
+const CLIPKW={pet:["cat","dog","pet","puppy","kitten"],cook:["cook","kitchen","recipe","food"],ramen:["ramen","noodle"],coffee:["coffee","latte","cafe"],gym:["gym","workout","fitness","lift"],dance:["dance","dancing"],
+  city:["city","street","night","downtown"],ocean:["ocean","beach","sea","wave"],sunset:["sunset","travel","road","drive"],music:["music","dj","concert","party"],rain:["rain"],snow:["snow","winter"],grwm:["makeup","beauty","grwm","mirror"],
+  gaming:["game","gaming"],space:["space","stars","sky","galaxy"],aurora:["aurora"],fireworks:["firework"],story:["talk","vlog","story"]};
+async function loadRepoClips(){try{const c=JSON.parse(localStorage.getItem("naymo_repoclips")||"null");if(c&&Date.now()-c.at<36e5){REPOCLIPS=c.list;return;}}catch(e){}
+  try{const r=await fetch(`https://api.github.com/repos/${REPO.owner}/${REPO.name}/contents/clips`);if(!r.ok)return;const j=await r.json();
+    const local=location.hostname.endsWith("github.io");
+    REPOCLIPS=(Array.isArray(j)?j:[]).filter(f=>/\.(mp4|webm|mov|m4v|jpe?g|png|webp)$/i.test(f.name)).map(f=>({name:f.name.toLowerCase(),kind:/\.(jpe?g|png|webp)$/i.test(f.name)?"image":"video",src:local?"clips/"+encodeURIComponent(f.name):f.download_url}));
+    try{localStorage.setItem("naymo_repoclips",JSON.stringify({at:Date.now(),list:REPOCLIPS}));}catch(e){}}catch(e){}}
+function clipPool(topic){const lib=libList().map(x=>({src:MEDIA[x.id],kind:x.kind,poster:x.thumb,name:""})),all=lib.concat(REPOCLIPS);
+  const kw=CLIPKW[topic]||[];const m=all.filter(c=>kw.some(k=>c.name.includes(k)));return m.length?m:all;}
+
+/* ================= post management (edit / pin / private / comments / delete) ================= */
+function applyEdit(p){const e=(ST.edits||{})[p.id];if(e){if(e.cap!=null)p.cap=e.cap;if(e.tags)p.tags=e.tags;p.priv=!!e.priv;p.noCm=!!e.noCm;}return p;}
+function setEdit(p,ch){ST.edits=ST.edits||{};ST.edits[p.id]=Object.assign(ST.edits[p.id]||{},ch);applyEdit(p);save();
+  document.querySelectorAll(`.vid[data-pid="${p.id}"]`).forEach(v=>{v.querySelector(".cap").innerHTML=capHTML(p);const cs=v.querySelector(".cmb span");if(cs)cs.textContent=p.noCm?"Off":fmt(pComments(p));});}
+function manageHTML(p){const pin=(ST.pins||[]).includes(p.id);return `<div class="sec" style="padding:4px 2px 8px">Manage your video</div><div class="acts" style="padding-top:0;border-bottom:1px solid var(--line);padding-bottom:14px">
+  <button data-m="edit"><i>${ic("edit")}</i>Edit caption</button><button data-m="pin" class="${pin?"on":""}"><i>${ic("star",{fill:pin})}</i>${pin?"Unpin":"Pin"}</button>
+  <button data-m="priv" class="${p.priv?"on":""}"><i>${ic("lock")}</i>${p.priv?"Make public":"Make private"}</button><button data-m="cm" class="${p.noCm?"on":""}"><i>${ic("cmt")}</i>${p.noCm?"Comments on":"Comments off"}</button>
+  <button data-m="del"><i>${ic("trash",{color:"#ef4444"})}</i>Delete</button></div>`;}
+IP.cmt='<path d="M21 11.5a8.4 8.4 0 01-12.2 7.5L3 21l2-5.3A8.4 8.4 0 1121 11.5z"/>';
+function manageAction(p,a,it){
+  if(a==="edit"){const{L,body}=mkLayer("Edit caption");const cur=p.cap+" "+p.tags.map(t=>"#"+t).join(" ");
+    body.innerHTML=`<div class="form"><label>Caption<textarea id="ec" maxlength="220">${esc(cur.trim())}</textarea></label><button class="go">Save</button></div>`;
+    body.querySelector(".go").onclick=()=>{const raw=body.querySelector("#ec").value.trim(),tags=(raw.match(/#[\w]+/g)||[]).map(t=>t.slice(1).toLowerCase());setEdit(p,{cap:raw.replace(/#[\w]+/g,"").trim(),tags});closeLayer(L);toast("Caption updated");if(curPage==="me")renderMe();};}
+  else if(a==="pin"){ST.pins=ST.pins||[];const i=ST.pins.indexOf(p.id);if(i>=0)ST.pins.splice(i,1);else{if(ST.pins.length>=3){toast("You can pin up to 3 videos — unpin one first");return;}ST.pins.unshift(p.id);}resetOrder();save();toast(i>=0?"Unpinned":"Pinned to your profile");if(curPage==="me")renderMe();}
+  else if(a==="priv"){setEdit(p,{priv:!p.priv});toast(p.priv?"Only you can see this video now":"Video is public again");}
+  else if(a==="cm"){setEdit(p,{noCm:!p.noCm});toast(p.noCm?"Comments turned off":"Comments turned on");}
+  else if(a==="del"){if(!confirm("Delete this video? This can't be undone."))return;ST.deleted=ST.deleted||{};ST.deleted[p.id]=1;
+    const np=ST.posts.findIndex(x=>x.id===p.id);if(np>=0){if(ST.posts[np].media)IDB.del(p.id);ST.posts.splice(np,1);}
+    ST.pins=(ST.pins||[]).filter(x=>x!==p.id);resetOrder();save();document.querySelectorAll(`.vid[data-pid="${p.id}"]`).forEach(v=>v.remove());
+    if(it&&stack.length&&stack[stack.length-1]._feed)closeLayer(stack[stack.length-1]);toast("Video deleted");if(curPage==="me")renderMe();}}
+
+/* ================= keep comments arriving on your posts ================= */
+G.postCore=["this is so good","how is this free content","ok this one's my favorite","the {topic} content never misses","rewatching this for the 5th time","you outdid yourself","{topic} king/queen behavior","the editing on this one 😭","why does this make me so happy","saving this","i showed this to my whole family","how long did this take","this deserves 100M views","the vibe is immaculate","need a part 2 asap","this popped up at the perfect time","i feel like i was there","the quality keeps getting better","tutorial when??","this is art","i'm obsessed with the colors","what song is this","you never disappoint","the ending got me","this is the one","i didn't expect that","sent this to my best friend","peak content","the {topic} era is real","first time here and i'm following","ok i'm hooked","my favorite creator for a reason","this made my day better","how are you so consistent","the attention to detail","who's watching at 3am","this hit different today","ok but the lighting","you should teach a class","this belongs in a museum"];
+function trickle(){setTimeout(trickle,22000+Math.random()*26000);if(document.hidden)return;
+  const cand=[...ST.posts.slice(-4).map(x=>x.id),"m0","m1","m2","m3","m4"].filter(id=>!(ST.deleted||{})[id]);if(!cand.length)return;
+  const r=R("tr"+Date.now()),id=r.ch(.6)&&ST.posts.length?ST.posts[ST.posts.length-1-r.int(0,Math.min(3,ST.posts.length-1))].id:r.pick(cand),p=getPost(id);if(!p||p.noCm)return;
+  const list=ST.uc[p.id]||(ST.uc[p.id]=[]),used=new Set(list.map(x=>(x.text||"").toLowerCase())),now=Date.now(),uid=r.int(60,NU-1);
+  const text=genUnique("post",p,used),cid="tc"+now.toString(36)+r.int(0,999);
+  list.push({id:cid,parent:null,uid,text,at:now,tgt:r.int(40,40000),tau:3e5,type:"trickle"});
+  if(r.ch(.35))list.push({id:cid+"r",parent:cid,uid:r.int(60,NU-1),text:genUnique("kid",p,used,{u:getUser(uid).username}),at:now+r.int(4000,15000),tgt:r.int(5,900),tau:3e5,type:"fan"});
+  const tr=list.filter(x=>x.type==="trickle");if(tr.length>80){const old=tr[0].id;ST.uc[p.id]=list.filter(x=>x.id!==old&&x.parent!==old);}
+  addNotif({at:now,type:"comment",uid,pid:p.id,text});save();updBadge();
+  if(ST.set.popups&&!sheetCtx)showPop(getUser(uid),"NEW COMMENT",`<b>${esc(getUser(uid).username)}</b>: ${esc(text)}`,()=>{openViewer(i=>i?null:p);setTimeout(()=>openComments(p),250);});}
+
+/* ================= games ================= */
+const GBOT=["zippy.jumps","cube.queen","no_lag_leo","dash.daisy","spikeproof","jumpman.k","orbit.ivy","gravity.gus","polygon.pro","tiny.tess","run.remy","neon.noor"];
+function gameBest(){let b={1:0,2:0,3:100};try{Object.assign(b,JSON.parse(localStorage.getItem("polydash_best")||"{}"));}catch(e){}return b;}
+function openGames(){const{L,body}=mkLayer("Games");
+  const render=()=>{const b=gameBest(),r=R("gb"+dayKey);const rows=GBOT.map(n=>({n,v:r.int(14,100),m:r.int(1,2)}));rows.push({n:ST.profile.username,v:Math.max(b[1],b[2]),me:1});rows.sort((a,c)=>c.v-a.v);
+    body.innerHTML=`<div class="gamecard"><div class="gcart"><canvas width="600" height="300"></canvas></div><div class="gcb"><b>Polygon Dash</b><small>Jump, fly and dodge spikes · 3 modes</small><button class="go gr" data-a="play">${ic("play",{fill:true})} Play</button></div></div>
+     <div class="card" style="margin:12px 14px"><h4>Your best <small>saved on this device</small></h4><div class="hbar"><span>Normal</span><div><i style="width:${b[1]}%"></i></div><b>${b[1]}%</b></div><div class="hbar"><span>Fly only</span><div><i style="width:${b[2]}%"></i></div><b>${b[2]}%</b></div></div>
+     <div class="card" style="margin:12px 14px"><h4>Leaderboard <small>today</small></h4>${rows.map((x,i)=>`<div class="lbrow ${x.me?"me":""}"><span class="rk r${i+1}">${i+1}</span>${x.me?avHTML(meUser()):avHTML(getUser(60+hashStr(x.n)%2900))}<div class="i"><b>${esc(x.n)}${x.me?ADMIN:""}</b><div>${x.me?"you":x.m===1?"Normal":"Fly only"}</div></div><span class="val">${x.v}%</span></div>`).join("")}</div>`;
+    body.querySelector('[data-a="play"]').onclick=()=>openGame(render);
+    const cv=body.querySelector("canvas"),c=cv.getContext("2d");const g=c.createLinearGradient(0,0,600,300);g.addColorStop(0,"#2b1a6b");g.addColorStop(1,"#a3195b");c.fillStyle=g;c.fillRect(0,0,600,300);
+    c.fillStyle="#140b2e";c.fillRect(0,230,600,70);c.fillStyle="#fff";c.fillRect(0,229,600,2);
+    [[300,230],[340,230],[470,230]].forEach(([x,y])=>{c.beginPath();c.moveTo(x,y);c.lineTo(x+20,y-36);c.lineTo(x+40,y);c.fillStyle="#000";c.fill();c.strokeStyle="#fff";c.lineWidth=2;c.stroke();});
+    c.save();c.translate(150,160);c.rotate(.3);c.fillStyle="#ffd23c";c.fillRect(-28,-28,56,56);c.strokeStyle="#000";c.lineWidth=4;c.strokeRect(-28,-28,56,56);c.fillStyle="#3cf";c.fillRect(-16,-16,32,32);c.restore();
+    c.fillStyle="#fff";c.font="900 44px sans-serif";c.fillText("POLYGON DASH",230,110);};
+  render();}
+function openGame(onClose){const L=el(`<div class="layer dark"><iframe src="games/polygon-dash.html" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="autoplay"></iframe><button class="back fback" style="top:62px">${ICON.back}</button></div>`);
+  L.querySelector(".back").onclick=()=>closeLayer(L);L._onClose=()=>{onClose&&onClose();};L._audio=()=>null;pushLayer(L);}
+
+/* ================= profile share card ================= */
+function loadImg(src){return new Promise(res=>{if(!src){res(null);return;}const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});}
+const svgURL=(inner,fill,stroke)=>"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="96" height="96" fill="${fill}" stroke="${stroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`);
+async function drawCard(cv){const c=cv.getContext("2d"),W=1080,H=1350,u=meUser(),hue=u.avatar.hue;cv.width=W;cv.height=H;
+  const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,`hsl(${hue},70%,22%)`);g.addColorStop(.55,"#12081f");g.addColorStop(1,`hsl(${(hue+60)%360},70%,25%)`);c.fillStyle=g;c.fillRect(0,0,W,H);
+  for(let i=0;i<14;i++){c.fillStyle=`hsla(${(hue+i*25)%360},90%,60%,.07)`;circ(c,R("cd"+i).f()*W,R("ce"+i).f()*H,80+R("cf"+i).f()*160);c.fill();}
+  c.fillStyle="rgba(255,255,255,.07)";rr(c,70,150,W-140,H-300,48);c.fill();c.strokeStyle="rgba(255,255,255,.14)";c.lineWidth=2;rr(c,70,150,W-140,H-300,48);c.stroke();
+  const ag=c.createLinearGradient(400,210,680,490);ag.addColorStop(0,`hsl(${hue},75%,62%)`);ag.addColorStop(1,`hsl(${(hue+50)%360},80%,45%)`);
+  c.fillStyle="#fff";circ(c,540,350,148);c.fill();c.fillStyle=ag;circ(c,540,350,138);c.fill();
+  if(u.avatar.icon){const im=await loadImg(svgURL(IP[u.avatar.icon],"none","#fff"));if(im)c.drawImage(im,540-80,350-80,160,160);}
+  else{c.fillStyle="#fff";c.font="800 130px sans-serif";c.textAlign="center";c.fillText((u.name||"?").charAt(0).toUpperCase(),540,395);}
+  c.textAlign="center";c.fillStyle="#fff";c.font="800 64px sans-serif";c.fillText(u.name,540,580);
+  c.font="600 40px sans-serif";c.fillStyle="rgba(255,255,255,.75)";const un="@"+u.username,tw=c.measureText(un).width;c.fillText(un,540-40,645);
+  c.fillStyle="#20d5ec";circ(c,540-40+tw/2+28,632,18);c.fill();c.strokeStyle="#fff";c.lineWidth=5;c.beginPath();c.moveTo(540-40+tw/2+19,632);c.lineTo(540-40+tw/2+26,639);c.lineTo(540-40+tw/2+38,624);c.stroke();
+  const adm=await loadImg("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(ADMIN.replace(/^<span[^>]*>/,"").replace(/<\/span>$/,"").replace("<svg ",'<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" ')));if(adm)c.drawImage(adm,540-40+tw/2+54,612,40,40);
+  if(ST.set.badge){c.font="700 30px sans-serif";const bt="Top creator · Naymo",bw=c.measureText(bt).width+56;c.fillStyle="rgba(255,59,107,.22)";rr(c,540-bw/2,680,bw,52,26);c.fill();c.fillStyle="#ffb3c6";c.fillText(bt,540,716);}
+  const st=[[fmt(u.following),"Following"],[fmt(u.followers),"Followers"],[fmt(u.likes),"Likes"]];st.forEach(([v,l],i)=>{const x=250+i*290;c.fillStyle="#fff";c.font="800 64px sans-serif";c.fillText(v,x,840);c.font="500 32px sans-serif";c.fillStyle="rgba(255,255,255,.6)";c.fillText(l,x,885);});
+  const ps=[0,1,2].map(i=>myPostAt(i)).filter(Boolean);const ims=await Promise.all(ps.map(p=>loadImg(thumb(p))));
+  ims.forEach((im,i)=>{const x=150+i*270,y=930,w=240,h=300;c.save();rr(c,x,y,w,h,24);c.clip();if(im){const s=Math.max(w/im.width,h/im.height);c.drawImage(im,x+(w-im.width*s)/2,y+(h-im.height*s)/2,im.width*s,im.height*s);}else{c.fillStyle="#222";c.fillRect(x,y,w,h);}c.restore();
+    c.fillStyle="#fff";c.font="700 28px sans-serif";c.textAlign="left";c.fillText("▶ "+fmt(pViews(ps[i])),x+16,y+h-18);c.textAlign="center";});
+  const lg=c.createLinearGradient(380,0,700,0);lg.addColorStop(0,"#a993ff");lg.addColorStop(1,"#ff7aa0");c.fillStyle=lg;c.font="900 72px sans-serif";c.fillText("naymo",540,105);
+  c.fillStyle="rgba(255,255,255,.7)";c.font="600 32px sans-serif";c.fillText(location.hostname.endsWith("github.io")?location.host+location.pathname.replace(/index\.html$/,""):"naymo.app/@"+u.username,540,1300);}
+function openShareCard(){const{L,body}=mkLayer("Share profile");
+  body.innerHTML=`<div class="form"><canvas class="scard" style="width:100%;max-width:420px;margin:0 auto;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.3)"></canvas>
+   <div class="hbtns" style="padding:0"><button class="go2" data-a="dl">${ic("download")} Save image</button><button class="go" data-a="sh">${ic("share")} Share</button></div>
+   <button class="go2" data-a="cp">${ic("link")} Copy profile link</button></div>`;
+  const cv=body.querySelector("canvas");drawCard(cv);
+  const blob=()=>new Promise(res=>cv.toBlob(res,"image/png"));
+  body.querySelector('[data-a="dl"]').onclick=async()=>{const b=await blob();const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="naymo-"+ST.profile.username+".png";document.body.appendChild(a);a.click();a.remove();toast("Image saved");};
+  body.querySelector('[data-a="sh"]').onclick=async()=>{const b=await blob();const f=new File([b],"naymo-"+ST.profile.username+".png",{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:"My Naymo"});}catch(e){}}else body.querySelector('[data-a="dl"]').click();};
+  body.querySelector('[data-a="cp"]').onclick=()=>{try{navigator.clipboard.writeText(location.href.split("#")[0]);}catch(e){}toast("Link copied");};}
 
 /* ================= create (post / story / duet) ================= */
 function makeThumb(url,kind){return new Promise(res=>{const cv=document.createElement("canvas");cv.width=180;cv.height=240;const c=cv.getContext("2d");
@@ -1920,6 +2074,10 @@ function openSettings(){const{L,body}=mkLayer("Settings");const s=ST.set;
     <label class="srow">Following<input type="number" id="s_fo" value="${s.following}"></label><label class="srow">Follower gain / sec<input type="number" id="s_fps" value="${s.fps}"></label>
     <div class="srow">New post blow-up<div class="sseg" id="s_sp">${Object.keys(SPEED).map(k=>`<button data-v="${k}" class="${s.speed===k?"on":""}">${k}</button>`).join("")}</div></div>
     <div class="srow"><button class="go" id="s_save">Save numbers</button></div></div>
+   <div class="sgroup"><div class="sgt">Cloud backup</div><div class="srow"><span>${ic("cloud")} Back up to my database</span><button class="sw ${s.cloud?"on":""}" data-k="cloud"></button></div>
+    <label class="srow">Sync ID<input id="s_sid" value="${esc(s.syncId||"")}" placeholder="any name"></label>
+    <div class="srow" style="display:block;font-size:13px;color:var(--mut);line-height:1.5"><span id="s_cst">${esc(cloudStatus)}</span><br>Use the same Sync ID on another phone to load your Naymo there. Uploaded videos stay on the device they came from.</div>
+    <div class="srow" style="gap:8px"><button class="go" id="s_cup">${ic("upload")} Back up now</button><button class="go2" id="s_cdn">${ic("download")} Restore</button></div></div>
    <div class="sgroup"><div class="sgt">Real videos</div><div class="srow"><span>${ic("video")} Use my clips in the feed</span><button class="sw ${s.real!==false?"on":""}" data-k="real"></button></div>
     <div class="srow"><span>${ic("sparkle")} Camera look on drawn videos</span><button class="sw ${s.film!==false?"on":""}" data-k="film"></button></div>
     <div class="srow" style="display:block;font-size:13px;color:var(--mut);line-height:1.5"><span id="s_lc">${libList().length} clips in your library.</span> Add real videos or photos from your phone and they'll play across the whole feed as other people's posts (with all the likes and comments).</div>
@@ -1934,6 +2092,9 @@ function openSettings(){const{L,body}=mkLayer("Settings");const s=ST.set;
   body.querySelector("#s_save").onclick=()=>{const n=id=>Math.max(0,Math.floor(+body.querySelector(id).value||0));s.followers=n("#s_f");s.likes=n("#s_l");s.following=n("#s_fo");s.fps=n("#s_fps");ST.fStart=Date.now();save();updLive();toast("Numbers updated");};
   body.querySelector("#s_lib").onchange=async e=>{const fs=[...e.target.files];if(!fs.length)return;toast("Adding "+fs.length+" clips…");const n=await addToLibrary(fs);body.querySelector("#s_lc").textContent=libList().length+" clips in your library.";toast(n+" clips added to your feed");refreshFeeds();};
   body.querySelector("#s_libc").onclick=()=>{if(!libList().length)return;if(!confirm("Remove all clips from your library?"))return;clearLibrary();body.querySelector("#s_lc").textContent="0 clips in your library.";refreshFeeds();toast("Library cleared");};
+  body.querySelector("#s_sid").onchange=e=>{s.syncId=e.target.value.trim()||"default";save();};
+  body.querySelector("#s_cup").onclick=()=>{s.syncId=body.querySelector("#s_sid").value.trim()||"default";save();body.querySelector("#s_cst").textContent="Backing up…";cloudSave(true);};
+  body.querySelector("#s_cdn").onclick=async()=>{s.syncId=body.querySelector("#s_sid").value.trim()||"default";const st=body.querySelector("#s_cst");st.textContent="Restoring…";const ok=await cloudLoad(true);st.textContent=cloudStatus;if(ok){toast("Restored — reloading");setTimeout(()=>location.reload(),900);}};
   body.querySelector("#s_coins").onclick=()=>{ST.coins+=10000;save();body.querySelector("#s_c").textContent=fmtX(ST.coins);toast("+10,000 coins");};
   body.querySelectorAll("[data-go]").forEach(r2=>r2.onclick=()=>({an:openAnalytics,live:openGoLive,edit:openEdit,board:()=>openBoard(null,"me",true,"mine")})[r2.dataset.go]());
   body.querySelector("#s_reset").onclick=()=>{if(!confirm("Delete all your Naymo posts, comments, messages and settings?"))return;try{localStorage.removeItem(LS);indexedDB.deleteDatabase("naymo");}catch(e){}location.reload();};}
@@ -1997,10 +2158,10 @@ let last=performance.now(),lastAct=null,lastVid=null;
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;const f=curFeed(),act=f&&f.active;
   if(act!==lastAct){if(lastVid)lastVid.pause();lastAct=act;lastVid=act?act.querySelector("video.media"):null;}
   if(act){const p=act._p,paused=act.classList.contains("paused");
-    if(!paused){act._t+=dt;if(!act.querySelector(".media")){const cv=act.querySelector("canvas");if(cv.width<2)sizeCanvas(act);drawFull(p,cv.getContext("2d"),cv.width,cv.height,act._t);}
+    if(!paused){act._t+=dt*(act._fast?2:1);if(!act.querySelector(".media")){const cv=act.querySelector("canvas");if(cv.width<2)sizeCanvas(act);drawFull(p,cv.getContext("2d"),cv.width,cv.height,act._t);}
       act.querySelector(".prog i").style.width=((lastVid&&lastVid.duration?lastVid.currentTime/lastVid.duration:(act._t%p.dur)/p.dur)*100)+"%";
       if(p.fx==="pop"){const ws=act.querySelectorAll(".ovt.pop .w"),k=Math.floor(act._t*2.2)%(ws.length+6);ws.forEach((w,i)=>w.classList.toggle("on",i<k));}}
-    if(lastVid){lastVid.muted=!ST.set.sound;if(paused&&!lastVid.paused)lastVid.pause();if(!paused&&lastVid.paused)lastVid.play().catch(()=>{});}}
+    if(lastVid){lastVid.muted=!ST.set.sound;lastVid.playbackRate=act._fast?2:1;if(act.classList.contains("scrubbing"))lastVid.pause();else if(paused&&!lastVid.paused)lastVid.pause();if(!paused&&lastVid.paused)lastVid.play().catch(()=>{});}}
   const top=topCtx();for(const a of ANIMS){if(!a.el.isConnected){ANIMS.delete(a);continue;}if(!top||top===a.el)a.draw(dt);}
   if(AU.ctx&&ST.set.sound){let at=null;if(top&&top._audio)at=top._audio();else if(act&&!act.classList.contains("paused")&&!(act._p.media&&MEDIA[act._p.id]&&act._p.media.kind==="video"))at={key:act._p.scene,seed:act._p.seed};
     if(at)setMusic(at.key,at.seed);else setMusic(null);musicTick();}
@@ -2010,13 +2171,16 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&&AU.ctx)set
 
 /* ================= init ================= */
 function refreshFeeds(){sessSeed++;for(const id of ["#fyFeed","#flFeed"]){const e=$(id);e.innerHTML="";}feeds.length=0;fyFeed=makeFeed($("#fyFeed"),fyGen);flFeed=null;if(homeTab==="fl")flFeed=makeFeed($("#flFeed"),flGen);for(const k in THC)delete THC[k];}
-(async()=>{applyDark();updSoundBtn();const t0=Date.now();await loadMedia();initDMs();
+function updCC(){$("#ccBtn").innerHTML=`<span class="cc ${ST.set.cc?"":"off"}">CC</span>`;app.classList.toggle("nocc",!ST.set.cc);}
+$("#ccBtn").onclick=()=>{ST.set.cc=!ST.set.cc;save();updCC();toast(ST.set.cc?"Captions on":"Captions off");};
+(async()=>{const t0=Date.now();if(await Promise.race([cloudLoad(false),new Promise(r=>setTimeout(()=>r(false),3500))]))setTimeout(()=>toast("Synced from the cloud"),1300);
+  applyDark();updSoundBtn();updCC();await loadMedia();initDMs();await Promise.race([loadRepoClips(),new Promise(r=>setTimeout(r,2500))]);
 
   lastNotif=ST.notifs.filter(n=>n.at<=Date.now()).length;
   fyFeed=makeFeed($("#fyFeed"),fyGen);requestAnimationFrame(frame);
   setTimeout(()=>{const s=$("#splash");s.style.opacity="0";setTimeout(()=>s.remove(),500);},Math.max(0,1100-(Date.now()-t0)));
-  setTimeout(randomPop,9000);updBadge();})();
-window.__naymo={ST,openBoard,getUser,getPost,openLive,openStories,openThread,openAnalytics,openSettings,openCreate,openShare,openTag,openSound};
+  setTimeout(randomPop,9000);setTimeout(trickle,15000);updBadge();})();
+window.__naymo={get ST(){return ST},openGames,openShareCard,manageAction,openBoard,getUser,getPost,openLive,openStories,openThread,openAnalytics,openSettings,openCreate,openShare,openTag,openSound};
 })();
 </script>
 </body>

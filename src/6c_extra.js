@@ -19,8 +19,8 @@ function genUnique(kind,p,used,x){for(let i=0;i<20;i++){const s=gen(kind,p,x);if
 
 /* ================= real clip library (your own clips used across the feed) ================= */
 function libList(){return (ST.lib||[]).filter(x=>MEDIA[x.id]);}
-const realOn=()=>ST.set.real!==false&&libList().length>0;
-function realOf(p){if(!realOn()||p.media||p.duetOf||p.isNew)return null;const l=libList();const x=l[hashStr(p.id)%l.length];return {src:MEDIA[x.id],poster:x.thumb,kind:x.kind};}
+const realOn=()=>ST.set.real!==false&&(libList().length>0||(typeof REPOCLIPS!=="undefined"&&REPOCLIPS.length>0));
+function realOf(p){if(ST.set.real===false||p.media||p.duetOf||p.isNew)return null;const pool=clipPool(p.topic);if(!pool.length)return null;const x=pool[hashStr(p.id)%pool.length];return {src:x.src,poster:x.poster,kind:x.kind};}
 const vidSrc=p=>(p.media&&MEDIA[p.id])?{src:MEDIA[p.id],kind:p.media.kind,own:true}:(r=>r?{src:r.src,kind:r.kind,poster:r.poster,own:false}:null)(realOf(p));
 async function addToLibrary(files){ST.lib=ST.lib||[];let n=0;for(const f of files){const kind=f.type.startsWith("video")?"video":f.type.startsWith("image")?"image":null;if(!kind)continue;
   const id="L"+Date.now().toString(36)+Math.floor(Math.random()*1e4),url=URL.createObjectURL(f);MEDIA[id]=url;await IDB.put(id,f);ST.lib.push({id,kind,thumb:await makeThumb(url,kind)});n++;}save();return n;}
