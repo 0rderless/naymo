@@ -106,6 +106,7 @@ svg{display:block}
 .vtop .livebtn{position:absolute;left:12px;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:800;border:1.5px solid #fff;border-radius:6px;padding:2px 6px}
 .vtop .livebtn i{width:7px;height:7px;border-radius:50%;background:var(--acc);display:block;animation:blink 1.2s infinite}
 @keyframes blink{50%{opacity:.25}}
+.vtop .gamesbtn{position:absolute;left:70px;width:30px;height:30px;display:flex;align-items:center;justify-content:center}.vtop .gamesbtn .ic{width:24px;height:24px}
 .vtop .rbtns{position:absolute;right:10px;display:flex;gap:12px}
 .vtop svg{width:24px;height:24px}
 /* avatars */
@@ -507,7 +508,7 @@ svg{display:block}
     <div class="feed" id="fyFeed"></div>
     <div class="feed hide" id="flFeed"></div>
     <div class="vtop">
-      <button class="livebtn" id="liveBtn"><i></i>LIVE</button>
+      <button class="livebtn" id="liveBtn"><i></i>LIVE</button><button class="gamesbtn" id="gamesBtn" aria-label="Games"></button>
       <span class="tab" data-t="fl">Following</span><span class="tab on" data-t="fy">For You</span>
       <div class="rbtns"><button id="ccBtn" title="Captions"></button><button id="sndBtn"></button><button id="hsrch"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button></div>
     </div>

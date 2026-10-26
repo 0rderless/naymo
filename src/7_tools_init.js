@@ -161,6 +161,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&&AU.ctx)set
 
 /* ================= init ================= */
 function refreshFeeds(){sessSeed++;for(const id of ["#fyFeed","#flFeed"]){const e=$(id);e.innerHTML="";}feeds.length=0;fyFeed=makeFeed($("#fyFeed"),fyGen);flFeed=null;if(homeTab==="fl")flFeed=makeFeed($("#flFeed"),flGen);for(const k in THC)delete THC[k];}
+$("#gamesBtn").innerHTML=ic("gamepad",{color:"#fff"});$("#gamesBtn").onclick=openGames;
 function updCC(){$("#ccBtn").innerHTML=`<span class="cc ${ST.set.cc?"":"off"}">CC</span>`;app.classList.toggle("nocc",!ST.set.cc);}
 $("#ccBtn").onclick=()=>{ST.set.cc=!ST.set.cc;save();updCC();toast(ST.set.cc?"Captions on":"Captions off");};
 (async()=>{const t0=Date.now();if(await Promise.race([cloudLoad(false),new Promise(r=>setTimeout(()=>r(false),3500))]))setTimeout(()=>toast("Synced from the cloud"),1300);
